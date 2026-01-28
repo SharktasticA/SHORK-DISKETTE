@@ -159,6 +159,15 @@ fix_perms()
     fi
 }
 
+# Cleans up any stale mounts and block-device mappings left by image builds
+clean_stale_mounts()
+{
+    echo -e "${GREEN}Cleaning up any stale mounts and block-device mappings left by image builds ...${RESET}"
+    sudo umount -lf /mnt 2>/dev/null || true
+    sudo losetup -a | grep shork-diskette.img | cut -d: -f1 | xargs -r sudo losetup -d || true
+    sudo dmsetup remove_all 2>/dev/null || true
+}
+
 
 
 ######################################################
@@ -169,7 +178,7 @@ install_arch_prerequisites()
 {
     echo -e "${GREEN}Installing prerequisite packages for an Arch-based system...${RESET}"
 
-    PACKAGES="bc bison bzip2 dosfstools flex git make sudo syslinux wget xz"
+    PACKAGES="bc bison bzip2 dosfstools flex git make mtools sudo syslinux wget xz"
 
     if $FIX_SYSLINUX; then
         PACKAGES+=" nasm"
@@ -510,6 +519,9 @@ build_diskette_img()
         if mountpoint -q /mnt; then
             sudo umount /mnt || true
         fi
+        if [[ -n "$LOOP" ]]; then
+            sudo losetup -d "$LOOP" 2>/dev/null || true
+        fi
     }
     trap cleanup EXIT ERR INT TERM
 
@@ -528,9 +540,16 @@ build_diskette_img()
     fi 
     sudo "$SYSLINUX_BIN" --install ../images/shork-diskette.img
 
+    # Ensure loop devices exist (Docker does not always create them)
+    for i in $(seq 0 255); do
+        [ -e /dev/loop$i ] || sudo mknod /dev/loop$i b 7 $i
+    done
+    [ -e /dev/loop-control ] || sudo mknod /dev/loop-control c 10 237
+
     # Mount it for copying files
-    echo -e "${GREEN}Mounting floppy diskette image for copying files...${RESET}"
-    sudo mount -o loop ../images/shork-diskette.img /mnt
+    echo -e "${GREEN}Mounting diskette image for copying files...${RESET}"
+    LOOP=$(sudo losetup -f --show ../images/shork-diskette.img)
+    sudo mount -t vfat "$LOOP" /mnt
 
     # Install the kernel
     echo -e "${GREEN}Copying SYSLINUX configuration...${RESET}"
@@ -548,8 +567,9 @@ build_diskette_img()
     sudo mkdir /mnt/data || true
 
     # Unmount the image
-    echo -e "${GREEN}Unmounting floppy diskette image...${RESET}"
+    echo -e "${GREEN}Unmounting diskette image...${RESET}"
     sudo umount /mnt
+    sudo losetup -d "$LOOP"
 }
 
 
@@ -637,4 +657,5 @@ fi
 build_file_system
 build_diskette_img
 fix_perms
+clean_stale_mounts
 generate_report
