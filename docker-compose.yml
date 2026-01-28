@@ -1,0 +1,13 @@
+services:
+  shork-diskette-build:
+    build: .
+    command:
+      - --always-build
+      - --is-debian
+    environment:
+      - HOST_GID=1000
+      - HOST_UID=1000
+      - IN_DOCKER=1
+    privileged: true
+    volumes:
+      - ./shork-diskette:/var/shork-diskette

@@ -1,0 +1,28 @@
+#!/bin/sh
+
+# Mount core file systems
+mount -t proc  proc  /proc
+mount -t sysfs sysfs /sys
+
+mdev -s
+ln -s /proc/mounts /etc/mtab
+mkdir -p /mnt /home
+mount -t msdos -o rw /dev/fd0 /mnt
+mkdir -p /mnt/data
+mount --bind /mnt/data /home
+
+[ -r /etc/hostname ] && hostname "$(cat /etc/hostname)"
+
+# Show welcome banner
+clear
+printf "\x1b[37;44m"
+cat banners/welcome
+printf "\x1b[0m"
+printf "\n\n"
+
+# Show welcome tip
+printf "Welcome, please check out \033[32mshorkhelp\033[0m to get started with @NAME@!"
+printf "\n\n"
+
+cd /home
+/bin/sh

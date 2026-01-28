@@ -1,0 +1,85 @@
+#!/bin/sh
+
+######################################################
+## A small utility that informs about SHORK         ##
+## DISKETTE's capabilities                          ##
+######################################################
+## Kali (sharktastica.co.uk)                        ##
+######################################################
+
+
+
+print_commands()
+{
+    OUTPUT="General
+-------
+awk, basename, cat, cp, expr, less, ln, ls, mkdir, mount, mv, printf, pwd,
+readlink, rev, rm, rmdir, sed, sync, tee, touch, umount
+
+Editor
+------
+vi
+
+System & processes
+------------------
+clear, date, df, free, hostname, uname
+
+SHORK utilities
+---------------
+shorkfetch, shorkhelp"
+
+    echo "$OUTPUT"
+}
+
+print_intro()
+{
+    OUTPUT="What is @NAME@
+----------------------
+@NAME@ is a minimal Linux distribution designed with 486SX compatibility
+in mind. It can fit on a single 1.44MB floppy diskette whilst still providing a
+practical command set. It was inspired by FLOPPINUX."
+
+    echo "$OUTPUT"
+}
+
+print_utilities()
+{
+    OUTPUT="SHORK utilities
+---------------
+
+shorkfetch - Displays basic system and environment information. Similar to
+fastfetch, neofetch, etc. This utility takes no arguments.
+
+shorkhelp - Provides help with using @NAME@ via command lists and
+guides. This utility requires the use of one of three parameters."
+
+    echo "$OUTPUT"
+}
+
+
+
+for arg in "$@"; do
+    case "$arg" in
+        --commands)
+            clear
+            print_commands
+            return 1
+            ;;
+        --intro)
+            clear
+            print_intro
+            return 1
+            ;;
+        --shorkutils)
+            clear
+            print_utilities
+            return 1
+            ;;
+    esac
+done
+
+CMDS="--commands | --intro | --shorkutils"
+
+printf "Displays help and reference information for using @NAME@ and its built-in tools.\n\n"
+echo "Usage: shorkhelp {$CMDS}"
+exit 1
