@@ -315,7 +315,7 @@ get_busybox()
     make ARCH=x86 -j$(nproc)
     make ARCH=x86 install
 
-    echo -e "${GREEN}Move the result into a file system we will build...${RESET}"
+    echo -e "${GREEN}Install BusyBox compilation as the basis for the root file system...${RESET}"
     if [ -d "${DESTDIR}" ]; then
         sudo rm -r "${DESTDIR}"
     fi
