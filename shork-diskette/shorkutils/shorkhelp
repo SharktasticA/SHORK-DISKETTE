@@ -22,7 +22,7 @@ vi
 
 System & processes
 ------------------
-clear, date, df, free, hostname, uname
+clear, date, dd, df, free, hostname, uname
 
 SHORK utilities
 ---------------

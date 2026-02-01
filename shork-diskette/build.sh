@@ -68,6 +68,7 @@ USED_PARAMS=""
 
 # Process arguments
 ALWAYS_BUILD=false
+ENABLE_PATA=false
 FIX_SYSLINUX=false
 IS_ARCH=false
 IS_DEBIAN=false
@@ -79,6 +80,10 @@ while [ $# -gt 0 ]; do
     case "$1" in
         --always-build)
             ALWAYS_BUILD=true
+            ;;
+        --enable-pata)
+            ENABLE_PATA=true
+            BUILD_TYPE="PATA capable"
             ;;
         --fix-syslinux)
             FIX_SYSLINUX=true
@@ -396,6 +401,11 @@ configure_kernel()
     cp $CURR_DIR/configs/linux.config .config
 
     FRAGS=""
+
+    if $ENABLE_PATA; then
+        echo -e "${GREEN}Enabling kernel PATA CD, DVD and hard drive support...${RESET}"
+        FRAGS+="$CURR_DIR/configs/linux.config.cdrom.frag "
+    fi
     
     if [ -n "$FRAGS" ]; then
         ./scripts/kconfig/merge_config.sh -m $CURR_DIR/configs/linux.config $FRAGS
@@ -473,8 +483,11 @@ get_kernel()
 # the "skip kernel" parameter is used.
 get_kernel_features()
 {
-    # NOT NEEDED YET
-    return
+    if $ENABLE_PATA; then
+        INCLUDED_FEATURES+="\n  * kernel-level PATA CD, DVD and hard drive support"
+    else
+        EXCLUDED_FEATURES+="\n  * kernel-level PATA CD, DVD and hard drive support"
+    fi
 }
 
 

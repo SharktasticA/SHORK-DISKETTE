@@ -4,12 +4,17 @@
 mount -t proc  proc  /proc
 mount -t sysfs sysfs /sys
 
+# Populate /dev from sysfs
 mdev -s
+
+# Provide compatibility for tools expecting mtab
 ln -s /proc/mounts /etc/mtab
-mkdir -p /mnt /home
-mount -t msdos -o rw /dev/fd0 /mnt
-mkdir -p /mnt/data
-mount --bind /mnt/data /home
+
+# Mount floppy root & bind /home to persistent storage
+mkdir -p /mnt/floppy /mnt/cd /home
+mount -t msdos -o rw /dev/fd0 /mnt/floppy
+mkdir -p /mnt/floppy/data
+mount --bind /mnt/floppy/data /home
 
 [ -r /etc/hostname ] && hostname "$(cat /etc/hostname)"
 

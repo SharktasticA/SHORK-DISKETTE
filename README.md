@@ -6,7 +6,7 @@ Member of the SHORK family:  [SHORK 486](https://github.com/SharktasticA/SHORK-4
 
 SHORK DISKETTE is a diskette-based minimal Linux distribution derived from the disk-based SHORK 486. The aim is to produce an operating system that is very lean but functional for PCs with 486SX-class or better processors, often with my '90s IBM ThinkPads in mind. It was based on [FLOPPINUX's build instructions](https://github.com/w84death/floppinux) and inspired by [Action Retro's demonstration of it](https://www.youtube.com/watch?v=SiHZbnFrHOY), first developed as an automated build script for achieving something similar but can be Dockerised for building on a wider range of systems, then used as the basis for an operating system with additional functionality and tailored to my usage.
 
-SHORK DISKETTE aims to work with at least 16MiB system memory and fit on a single 1.44MB 3.5" floppy diskette. Despite that constraint, SHORK DISKETTE offers a modern Linux kernel from 2025, a selection of typical Linux commands, some custom SHORK utilities, and a cute ASCII shark welcome screen!
+SHORK DISKETTE aims to work with at least 16MiB system memory and fit on a single 1.44MB 3.5" floppy diskette. Despite that constraint, SHORK DISKETTE offers a modern Linux kernel from 2025, a selection of typical Linux commands, some custom SHORK utilities, and a cute ASCII shark welcome screen! When using the "enable PATA" build parameter, SHORK DISKETTE can detect and mount media in IDE-based CD and DVD drives at the expense of most usable space, useful writing a SHORK 486 or similar disk image from an optical disc to the host's fixed disk.
 
 <p align="center"><img alt="A screenshot of SHORK DISKETTE running on a VMware Workstation virtual machine after a cold boot" src="screenshots/first_boot.png"></p>
 
@@ -16,7 +16,7 @@ SHORK DISKETTE aims to work with at least 16MiB system memory and fit on a singl
 
 ### Core commands (BusyBox)
 
-awk, basename, cat, clear, cp, date, df, expr, free, hostname, less, ln, ls, mkdir, mount, mv, printf, pwd, readlink, rev, rm, rmdir, sed, sync, tee, touch, umount, uname, vi
+awk, basename, cat, clear, cp, date, dd, df, expr, free, hostname, less, ln, ls, mkdir, mount, mv, printf, pwd, readlink, rev, rm, rmdir, sed, sync, tee, touch, umount, uname, vi
 
 ### Custom utilities 
 
@@ -108,11 +108,15 @@ These parameters help automate the use of the build script, especially for succe
 
 * **Skip kernel** (`--skip-kernel`): can be used to skip recompiling the kernel.
     * This parameter requires at least one complete build.
-    * This does nothing if the "minimal" Aparameter is also used.
 
 * **Skip BusyBox** (`--skip-busybox`): can be used to skip recompiling BusyBox.
     * This parameter requires at least one complete build.
-    * This does nothing if the "minimal" parameter is also used.
+
+#### Bundled programs and features
+
+* **Enable PATA** (`--enable-pata`): can be used to enable PATA (IDE) CD, DVD and hard drive support in the Linux kernel. This can allow SHORK DISKETTE to detect all three and mount optical drives, useful if you wish to use it for writing a SHORK 486 or similar disk image from an optical disc to the host's fixed disk.
+    * This will take up almost all remaining space, leaving at most a few dozen bytes for the user.
+    * This does nothing if the "skip kernel" parameter is also used.
 
 #### Fixes
 
