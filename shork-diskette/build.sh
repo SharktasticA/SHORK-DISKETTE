@@ -171,6 +171,54 @@ clean_stale_mounts()
 
 
 ######################################################
+## Copy functions                                   ##
+######################################################
+
+# Copies a config file to a destination and makes sure any @CC@, @CC_STATIC@, @AR@
+# or @STRIP@ placeholders are replaced
+copy_config()
+{
+    # Input parameters
+    SRC="$1"
+    DST="$2"
+
+    # Ensure source exists
+    [ -f "$SRC" ] || return 1
+
+    # Copy file
+    sudo cp "$SRC" "$DST"
+
+    # Replace all placeholders with their respective values
+    sudo sed -i -e "s|@CC@|$CC|g" -e "s|@CC_STATIC@|$CC_STATIC|g" -e "s|@AR@|$AR|g" -e "s|@STRIP@|$STRIP|g" "$DST"
+}
+
+# Copies a sysfile to a destination and makes sure any @NAME@ @VER@, @ID@
+# or @URL@ placeholders are replaced
+copy_sysfile()
+{
+    # Input parameters
+    SRC="$1"
+    DST="$2"
+
+    # Ensure source exists
+    [ -f "$SRC" ] || return 1
+
+    # Copy file
+    sudo cp "$SRC" "$DST"
+
+    # Read NAME, VER, ID and URL
+    NAME="$(cat ${CURR_DIR}/branding/NAME | tr -d '\n')"
+    VER="$(cat ${CURR_DIR}/branding/VER | tr -d '\n')"
+    ID="$(cat ${CURR_DIR}/branding/ID | tr -d '\n')"
+    URL="$(cat ${CURR_DIR}/branding/URL | tr -d '\n')"
+
+    # Replace all placeholders with their respective values
+    sudo sed -i -e "s|@NAME@|$NAME|g" -e "s|@VER@|$VER|g" -e "s|@ID@|$ID|g" -e "s|@URL@|$URL|g" "$DST"
+}
+
+
+
+######################################################
 ## Host environment prerequisites                   ##
 ######################################################
 
@@ -181,7 +229,7 @@ install_arch_prerequisites()
     PACKAGES="bc bison bzip2 cpio dosfstools flex git make mtools sudo syslinux wget xz"
 
     if $FIX_SYSLINUX; then
-        PACKAGES+=" nasm"
+        PACKAGES+=" nasm python"
     fi
 
     sudo pacman -Syu --noconfirm --needed $PACKAGES || true
@@ -195,7 +243,7 @@ install_debian_prerequisites()
     PACKAGES="bc bison bzip2 cpio dosfstools flex git make sudo syslinux wget xz-utils"
 
     if $FIX_SYSLINUX; then
-        PACKAGES+=" nasm uuid-dev"
+        PACKAGES+=" nasm python3 python-is-python3 uuid-dev"
     fi
 
     sudo apt-get install -y $PACKAGES || true
@@ -449,30 +497,6 @@ copy_licences()
 ## File system & diskette image building            ##
 ######################################################
 
-# Copies a sysfile to a destination and makes sure any @NAME@ @VER@, @ID@
-# or @URL@ placeholders are replaced
-copy_sysfile()
-{
-    # Input parameters
-    SRC="$1"
-    DST="$2"
-
-    # Ensure source exists
-    [ -f "$SRC" ] || return 1
-
-    # Copy file
-    sudo cp "$SRC" "$DST"
-
-    # Read NAME, VER, ID and URL
-    NAME="$(cat ${CURR_DIR}/branding/NAME | tr -d '\n')"
-    VER="$(cat ${CURR_DIR}/branding/VER | tr -d '\n')"
-    ID="$(cat ${CURR_DIR}/branding/ID | tr -d '\n')"
-    URL="$(cat ${CURR_DIR}/branding/URL | tr -d '\n')"
-
-    # Replace all placeholders with their respective values
-    sudo sed -i -e "s|@NAME@|$NAME|g" -e "s|@VER@|$VER|g" -e "s|@ID@|$ID|g" -e "s|@URL@|$URL|g" "$DST"
-}
-
 # Builds the root system
 build_file_system()
 {
@@ -489,17 +513,17 @@ build_file_system()
     chmod +x $CURR_DIR/shorkutils/shorkhelp
 
     echo -e "${GREEN}Copying pre-defined files...${RESET}"
-    copy_sysfile $CURR_DIR/sysfiles/welcome $CURR_DIR/build/root/banners/welcome
-    copy_sysfile $CURR_DIR/sysfiles/hostname $CURR_DIR/build/root/etc/hostname
-    copy_sysfile $CURR_DIR/sysfiles/issue $CURR_DIR/build/root/etc/issue
-    copy_sysfile $CURR_DIR/sysfiles/os-release $CURR_DIR/build/root/etc/os-release
-    copy_sysfile $CURR_DIR/sysfiles/rc $CURR_DIR/build/root/etc/init.d/rc
-    copy_sysfile $CURR_DIR/sysfiles/inittab $CURR_DIR/build/root/etc/inittab
+    copy_sysfile $CURR_DIR/sysfiles/welcome $DESTDIR/banners/welcome
+    copy_sysfile $CURR_DIR/sysfiles/hostname $DESTDIR/etc/hostname
+    copy_sysfile $CURR_DIR/sysfiles/issue $DESTDIR/etc/issue
+    copy_sysfile $CURR_DIR/sysfiles/os-release $DESTDIR/etc/os-release
+    copy_sysfile $CURR_DIR/sysfiles/rc $DESTDIR/etc/init.d/rc
+    copy_sysfile $CURR_DIR/sysfiles/inittab $DESTDIR/etc/inittab
 
     echo -e "${GREEN}Copying shorkutils...${RESET}"
-    copy_sysfile $CURR_DIR/shorkutils/shorkfetch $CURR_DIR/build/root/usr/bin/shorkfetch
+    copy_sysfile $CURR_DIR/shorkutils/shorkfetch $DESTDIR/usr/bin/shorkfetch
     INCLUDED_FEATURES+="\n  * shorkfetch"
-    copy_sysfile $CURR_DIR/shorkutils/shorkhelp $CURR_DIR/build/root/usr/bin/shorkhelp
+    copy_sysfile $CURR_DIR/shorkutils/shorkhelp $DESTDIR/usr/bin/shorkhelp
     INCLUDED_FEATURES+="\n  * shorkhelp"
 
     cd "${DESTDIR}"
@@ -606,7 +630,7 @@ generate_report()
 
     lines+=(
         ""
-        "Est. minimal RAM: ${EST_MIN_RAM}MiB"
+        "Est. minimum RAM: ${EST_MIN_RAM}MiB"
         "Bootloader used: $BOOTLDR_USED"
     )
 
