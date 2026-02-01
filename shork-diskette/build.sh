@@ -178,7 +178,7 @@ install_arch_prerequisites()
 {
     echo -e "${GREEN}Installing prerequisite packages for an Arch-based system...${RESET}"
 
-    PACKAGES="bc bison bzip2 dosfstools flex git make mtools sudo syslinux wget xz"
+    PACKAGES="bc bison bzip2 cpio dosfstools flex git make mtools sudo syslinux wget xz"
 
     if $FIX_SYSLINUX; then
         PACKAGES+=" nasm"
@@ -192,7 +192,7 @@ install_debian_prerequisites()
     echo -e "${GREEN}Installing prerequisite packages for a Debian-based system...${RESET}"
     sudo apt-get update
 
-    PACKAGES="bc bison bzip2 dosfstools flex git make sudo syslinux wget xz-utils"
+    PACKAGES="bc bison bzip2 cpio dosfstools flex git make sudo syslinux wget xz-utils"
 
     if $FIX_SYSLINUX; then
         PACKAGES+=" nasm uuid-dev"
