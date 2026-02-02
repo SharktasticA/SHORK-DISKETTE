@@ -314,11 +314,17 @@ get_patched_syslinux()
         echo -e "${YELLOW}SYSLINUX source already present, resetting...${RESET}"
         cd syslinux
         git reset --hard
+        make clean || true
     else
         echo -e "${GREEN}Downloading SYSLINUX...${RESET}"
         git clone https://github.com/SharktasticA/syslinux.git
         cd syslinux
     fi
+
+    # Patches for fixing "x.bin: too big (y > z)" issues
+    sudo sed -i 's/\$maxsize = \$padsize = 440;/\$maxsize = \$padsize = 500;/' mbr/checksize.pl
+    sudo sed -i 's/\$maxsize = \$padsize = 432;/\$maxsize = \$padsize = 500;/' mbr/checksize.pl
+    sudo sed -i 's/\$maxsize = \$padsize = 439;/\$maxsize = \$padsize = 500;/' mbr/checksize.pl
 
     # Compile and install
     echo -e "${GREEN}Compiling SYSLINUX...${RESET}"
